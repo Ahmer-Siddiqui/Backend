@@ -1,38 +1,49 @@
+const { required } = require("joi");
 const Listing = require("../models/listingModel");
+const ExpressError = require("../utils/ExpressError");
+const wrapAsync = require("../utils/wrapAsync");
+const listingSchema = require("../schema")
+const validateListing = require("../middleware/validateListing")
 
-const indexController = async (req, res) => {
+const indexController = wrapAsync(async (req, res) => {
   const allListing = await Listing.find();
   res.render("listings/index", { allListing });
-};
+});
 const newController = async (req, res) => {
   res.render("listings/new");
 };
-const showController = async (req, res) => {
+const showController = wrapAsync(async (req, res) => {
   const { id } = req.params;
   const listing = await Listing.findById(id);
   res.render("listings/show", { listing });
-};
-const addDataContrtoller = async (req, res) => {
+});
+const addDataContrtoller = wrapAsync(validateListing,async (req, res, next) => {
+    const {listing} = req.body;
+    const result = listingSchema.validate(listing);
+    if(result.error){
+      throw new ExpressError(400,result.error)
+    }
+    const newlisting = new Listing(listing);
+    await newlisting.save();
+    res.redirect("/listings");
+});
+const updateDataContrtoller = wrapAsync(validateListing,async (req, res) => {
   const listing = req.body.listing;
-  const newlisting = new Listing(listing);
-  await newlisting.save();
-  res.redirect("/listings");
-};
-const updateDataContrtoller = async (req, res) => {
+  
   const { id } = req.params;
-  await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+  await Listing.findByIdAndUpdate(id, { ...listing });
   res.redirect(`/listings/${id}`);
-};
-const showEditableDataContrtoller = async (req, res) => {
+});
+const showEditableDataContrtoller = wrapAsync(async (req, res) => {
   const { id } = req.params;
   const listing = await Listing.findById(id);
   res.render("listings/edit", { listing });
-};
-const deleteDataController = async (req, res) => {
+});
+const deleteDataController = wrapAsync(async (req, res) => {
   const { id } = req.params;
   const deletedListing = await Listing.findByIdAndDelete(id);
   res.redirect("/listings");
-};
+});
 
 module.exports = {
   updateDataContrtoller,
