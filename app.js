@@ -33,8 +33,10 @@ app.use("/listings", require("./routes/listingsRoutes"));
 app.all("*", (req, res, next) => {
   next(new ExpressError(404, "Page Not Found"));
 });
+
 app.use((err, req, res, next) => {
   const { statusCode = 500, message = "Something Went Wrong" } = err;
+
   res.status(statusCode).render("error", { message });
 });
 

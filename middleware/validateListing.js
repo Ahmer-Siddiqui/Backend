@@ -1,13 +1,17 @@
 const listingSchema = require("../schema");
 const ExpressError = require("../utils/ExpressError");
 
-
-const validateListing = (req, res, next) => {
-    let { error } = listingSchema.validate(req.body);
+const validateListing = async(req, res, next) => {
+  try {
+    let { error } = await listingSchema.validate(req.body);
     if (error) {
-      throw new ExpressError(400, error.message);
+      let errMsg = error.details.map((el) => el.message).join(",");
+      throw new ExpressError(400, errMsg);
     } else {
-      next()
+      next();
     }
-  };
-  module.exports = validateListing;
+  } catch (error) {
+    next(error)
+  }
+};
+module.exports = validateListing;

@@ -9,13 +9,14 @@ const {
   deleteDataController,
   updateDataContrtoller,
 } = require("../controllers/listingsController");
+const validateListing = require("../middleware/validateListing");
 
 //Index Route
-router.route("/").get(indexController).post(addDataContrtoller);
+router.route("/").get(indexController).post(validateListing,addDataContrtoller);
 //New Route
 router.route("/new").get(newController);
 //Show Route // Delete Route //Update Route 
-router.route("/:id").get(showController).delete(deleteDataController).put(updateDataContrtoller);
+router.route("/:id").put(validateListing,updateDataContrtoller).get(showController).delete(deleteDataController)
 //Edit Route 
 router.route("/:id/edit").get(showEditableDataContrtoller);
 
